@@ -1416,7 +1416,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -2524,7 +2524,7 @@ var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (
 var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
 };
@@ -2699,17 +2699,18 @@ class IssueProcessor {
     getIssues(page) {
         return __awaiter(this, void 0, void 0, function* () {
             // generate type for response
-            const endpoint = this.client.issues.listForRepo;
+            const endpoint = this.client.search.issuesAndPullRequests;
+            const labelQuery = this.options.onlyLabels.split(',').map(l => `label:${l.trim()}`).join(' ');
+            const query = `is:open repo:${github_1.context.repo.owner}/${github_1.context.repo.repo} ${labelQuery}`;
+            core.info(`Using query: ${query}`);
             try {
-                const issueResult = yield this.client.issues.listForRepo({
-                    owner: github_1.context.repo.owner,
-                    repo: github_1.context.repo.repo,
-                    state: 'open',
-                    labels: this.options.onlyLabels,
+                const issueResult = yield this.client.search.issuesAndPullRequests({
+                    q: query,
                     per_page: 100,
-                    direction: this.options.ascending ? 'asc' : 'desc',
+                    order: this.options.ascending ? 'asc' : 'desc',
                     page
                 });
+                core.info('eh: ' + JSON.stringify(issueResult.data));
                 return issueResult.data;
             }
             catch (error) {
