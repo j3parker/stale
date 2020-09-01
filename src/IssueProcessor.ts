@@ -300,18 +300,19 @@ export class IssueProcessor {
   // grab issues from github in baches of 100
   private async getIssues(page: number): Promise<Issue[]> {
     // generate type for response
-    const endpoint = this.client.issues.listForRepo;
+    const endpoint = this.client.issues.issuesAndPullRequests;
     type OctoKitIssueList = GetResponseTypeFromEndpointMethod<typeof endpoint>;
 
+    const labelQuery = this.options.onlyLabels.map(l => `label:${l}`).join(' ');
+    const query = `is:open repo:${context.repo.owner}/${context.repo.repo} ${labelQuery}`;
+    core.info(`Using query: ${query}`);
+
     try {
-      const issueResult: OctoKitIssueList = await this.client.issues.listForRepo(
+      const issueResult: OctoKitIssueList = await this.client.issues.issuesAndPullRequests(
         {
-          owner: context.repo.owner,
-          repo: context.repo.repo,
-          state: 'open',
-          labels: this.options.onlyLabels,
+	  q: query,
           per_page: 100,
-          direction: this.options.ascending ? 'asc' : 'desc',
+          order: this.options.ascending ? 'asc' : 'desc',
           page
         }
       );
